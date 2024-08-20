@@ -1,0 +1,30 @@
+[root@master ~]# vim replicaset.yml 
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata: 
+  name: myapps-rs
+  labels:
+    app: myapp
+    type: front-end
+spec:
+  template:
+    metadata:
+      name: myapp-pod
+      labels:
+        app: myapp
+        type: front-end
+    spec:
+      containers:
+      - image: nginx
+        name: mypod
+  replicas: 1
+  selector:
+    matchLabels:
+      type: front-end
+----save---
+
+$kubectl create -f replicaset.yml
+$kubectl get pods -o wide
+edit the "replicas: 4" on above yaml file and try apply the same
+$kubectl apply -f replicaset.yml 
+$kubectl get pod -o wide
