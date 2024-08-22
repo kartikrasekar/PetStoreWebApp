@@ -1,0 +1,58 @@
+DaemonSet:
+    Create a DaemonSet with the below file.  
+    Note: Using deployment dry-run you can create with modifications
+[root@master ~]# cat daemonsetUP.yml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata: 
+  name: mydset
+  labels:
+    app: dset-ds
+    type: mydset
+spec:
+  template:
+    metadata:
+      name: mydset-pod
+      labels:
+        app: dset-pod
+        type: mydset
+    spec:
+      containers:
+      - image: nginx
+        name: mydsetcont
+  selector:
+    matchLabels:
+      type: mydset
+
+[root@master ~]# 
+[root@master ~]# kubectl create -f daemonsetUP.yml 
+
+[root@master ~]# kubectl get ds
+NAME     DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE
+mydset   2         2         2       2            2           <none>          33m
+[root@master ~]# 
+
+Below output shows that 2 different instances are running in 2 different nodes (each node one instance)
+[root@master ~]# kubectl get pod -o wide
+NAME           READY   STATUS    RESTARTS   AGE     IP             NODE                NOMINATED NODE   READINESS GATES
+mydset-gxvw4   1/1     Running   0          34m     192.168.0.6    node2.example.com   <none>           <none>
+mydset-zfz6w   1/1     Running   0          29m     192.168.0.14   node1.example.com   <none>           <none>
+[root@master ~]# 
+
+========Excercise completed===================
+
+Create a new node (node3.example.com) and include the same in this cluster with join command:
+    Once included, then we can able to see the Daemonset is running on the new node also.  
+    
+[root@master ~]# kubectl get ds
+NAME     DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE
+mydset   3         3         3       3            3           <none>          43m
+[root@master ~]# kubectl get pod -o wide
+NAME           READY   STATUS    RESTARTS   AGE   IP             NODE                NOMINATED NODE   READINESS GATES
+mydset-9p7wt   1/1     Running   0          17m   192.168.0.2    node3.example.com   <none>           <none>
+mydset-gxvw4   1/1     Running   0          43m   192.168.0.6    node2.example.com   <none>           <none>
+mydset-zfz6w   1/1     Running   0          38m   192.168.0.14   node1.example.com   <none>           <none>
+[root@master ~]# 
+
+Without any commands, by default the new node is running with the above pods which are considered as DaemonSet (Agents on nodes):
+    ====
