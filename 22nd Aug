@@ -1,0 +1,188 @@
+Create deployment and assign limits and requests:    
+
+[root@master ~]# cat resdeploy.yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: resdeploy
+  name: resdeploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: resdeploy
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: resdeploy
+    spec:
+      containers:
+      - image: nginx
+        name: nginx
+        resources: 
+          limits:
+            cpu: 200m
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+status: {}
+[root@master ~]# 
+
+    [root@master ~]# kubectl get pod -o wide
+NAME                         READY   STATUS    RESTARTS   AGE   IP            NODE                NOMINATED NODE   READINESS GATES
+resdeploy-79b575988b-vtvc4   1/1     Running   0          18m   192.168.0.4   node2.example.com   <none>           <none>
+[root@master ~]# 
+
+Change the values in requests/limits:
+
+[root@master ~]# cat resdeploy.yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: resdeploy
+  name: resdeploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: resdeploy
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: resdeploy
+    spec:
+      containers:
+      - image: nginx
+        name: nginx
+        resources: 
+          limits:
+            cpu: 200m
+            memory: 200Gi
+          requests:
+            cpu: 100m
+            memory: 100Gi
+status: {}
+[root@master ~]# 
+
+[root@master ~]# kubectl get pod 
+NAME                         READY   STATUS    RESTARTS   AGE
+resdeploy-86bcb759c5-xpjfc   0/1     Pending   0          2s
+[root@master ~]# 
+
+[root@master ~]# kubectl get events | grep -i insuffi
+42s         Warning   FailedScheduling         pod/resdeploy-86bcb759c5-xpjfc    0/3 nodes are available: 1 node(s) had untolerated taint {node-role.kubernetes.io/control-plane: }, 2 Insufficient memory. preemption: 0/3 nodes are available: 1 Preemption is not helpful for scheduling, 2 No preemption victims found for incoming pod.
+[root@master ~]# 
+
+Now change back to original values and find the status:
+
+[root@master ~]# cat resdeploy.yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: resdeploy
+  name: resdeploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: resdeploy
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: resdeploy
+    spec:
+      containers:
+      - image: nginx
+        name: nginx
+        resources: 
+          limits:
+            cpu: 200m
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+status: {}
+[root@master ~]# 
+
+    [root@master ~]# kubectl get pod -o wide
+NAME                         READY   STATUS    RESTARTS   AGE   IP            NODE                NOMINATED NODE   READINESS GATES
+resdeploy-79b575988b-vtvc4   1/1     Running   0          18m   192.168.0.4   node2.example.com   <none>           <none>
+[root@master ~]# 
+
+[root@master ~]# kubectl describe node node2
+Name:               node2.example.com
+Roles:              <none>
+Labels:             beta.kubernetes.io/arch=amd64
+                    beta.kubernetes.io/os=linux
+                    kubernetes.io/arch=amd64
+                    kubernetes.io/hostname=node2.example.com
+                    kubernetes.io/os=linux
+Annotations:        flannel.alpha.coreos.com/backend-data: {"VNI":1,"VtepMAC":"1a:86:a4:20:a0:f5"}
+                    flannel.alpha.coreos.com/backend-type: vxlan
+                    flannel.alpha.coreos.com/kube-subnet-manager: true
+                    flannel.alpha.coreos.com/public-ip: 10.0.11.103
+                    kubeadm.alpha.kubernetes.io/cri-socket: unix:///var/run/containerd/containerd.sock
+                    node.alpha.kubernetes.io/ttl: 0
+                    volumes.kubernetes.io/controller-managed-attach-detach: true
+CreationTimestamp:  Tue, 20 Aug 2024 22:46:14 +0530
+Taints:             <none>
+Unschedulable:      false
+Lease:
+  HolderIdentity:  node2.example.com
+  AcquireTime:     <unset>
+  RenewTime:       Thu, 22 Aug 2024 10:28:42 +0530
+......
+Addresses:
+  InternalIP:  10.0.11.103
+  Hostname:    node2.example.com
+Capacity:
+  cpu:                2
+  ephemeral-storage:  64157076Ki
+  hugepages-1Gi:      0
+  hugepages-2Mi:      0
+  memory:             7882440Ki
+  pods:               110
+Allocatable:
+  cpu:                2
+  ephemeral-storage:  59127161144
+  hugepages-1Gi:      0
+  hugepages-2Mi:      0
+  memory:             7780040Ki
+  pods:               110
+System Info:
+  Machine ID:                 208eb4086c764575b018e1a1e227670d
+  System UUID:                b2090842-45fa-d9d0-8017-c0b380dc5d49
+  Boot ID:                    6ee665d7-f230-413b-9525-a13b2b777c9e
+  Kernel Version:             4.18.0-553.el8_10.x86_64
+  OS Image:                   Rocky Linux 8.10 (Green Obsidian)
+  Operating System:           linux
+  Architecture:               amd64
+  Container Runtime Version:  containerd://1.6.10
+  Kubelet Version:            v1.29.8
+  Kube-Proxy Version:         v1.29.8
+PodCIDR:                      192.168.0.0/24
+PodCIDRs:                     192.168.0.0/24
+Non-terminated Pods:          (4 in total)
+  Namespace                   Name                           CPU Requests  CPU Limits  Memory Requests  Memory Limits  Age
+  ---------                   ----                           ------------  ----------  ---------------  -------------  ---
+  classwork                   resdeploy-79b575988b-9hmwr     100m (5%)     200m (10%)  100Mi (1%)       200Mi (2%)     14s
+  kube-flannel                kube-flannel-ds-tglvz          100m (5%)     0 (0%)      50Mi (0%)        0 (0%)         35h
+  kube-system                 fluentd-elasticsearch-xrmz9    100m (5%)     0 (0%)      200Mi (2%)       200Mi (2%)     35h
+  kube-system                 kube-proxy-28bgv               0 (0%)        0 (0%)      0 (0%)           0 (0%)         35h
+==============
+$ kubectl create deploy nginxsvc  - -image=nginx --dry-run=client -o yaml > nginxsvc.yml
+==============
+
