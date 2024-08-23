@@ -1,0 +1,96 @@
+Storage:
+    
+ StorageClass:
+ [root@master murali-21aug]# vim storageclass.yml
+apiVersion: storage.k8s.io/v1 
+kind: StorageClass 
+metadata: 
+  name: localdisk 
+provisioner: kubernetes.io/no-provisioner
+allowVolumeExpansion: true
+
+[root@master murali-21aug]# 
+
+[root@master murali-21aug]#  kubectl create -f storageclass.yml
+[root@master murali-21aug]#   kubectl get sc
+
+Note: this StorageClass is a global object
+
+PersistentVolume:
+    
+[root@master murali-21aug]# vim host-pv.yml 
+kind: PersistentVolume 
+apiVersion: v1 
+metadata: 
+   name: host-pv 
+spec: 
+   storageClassName: localdisk
+   persistentVolumeReclaimPolicy: Recycle 
+   capacity: 
+      storage: 1Gi 
+   accessModes: 
+      - ReadWriteOnce 
+   hostPath: 
+      path: /var/output          ---------------------> host mountpoint 
+------save----- 
+
+[root@master murali-21aug]# kubectl create -f host-pv.yml
+[root@master murali-21aug]# kubectl get pv
+Note:  PV is also a global object - which we can able to access from any namespace (project)
+
+PersistentVolumeClaim(PVC):
+    
+    [root@master murali-21aug]# vim host-pvc.yml
+apiVersion: v1 
+kind: PersistentVolumeClaim 
+metadata: 
+   name: host-pvc 
+spec: 
+   storageClassName: localdisk 
+   accessModes: 
+      - ReadWriteOnce 
+   resources: 
+      requests: 
+         storage: 500Mi
+[root@master murali-21aug]# 
+
+Note:  PVC is a namespace specific
+    
+App/Pod Creation using Deployment:
+
+[root@master murali-21aug]# vim deployment-hostpv.yml 
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: myapps-dep
+  labels:
+    app: myapp
+    type: front-end
+spec:
+  template:
+    metadata:
+      name: myapp-dep-pod
+      labels:
+        app: myapp-dep
+        type: front-end
+    spec:
+      containers:
+      - image: busybox
+        name: busycont
+        command: ['sh', '-c', 'while true; do echo Success! >> /output/success.txt; sleep 5; done'] 
+        volumeMounts:
+        - name: pv-storage
+          mountPath: /output   --> Mountpoint on the pod 
+      volumes:
+      - name: pv-storage
+        persistentVolumeClaim:
+          claimName: host-pvc
+  replicas: 1
+  selector:
+    matchLabels:
+      type: front-end
+
+[root@master murali-21aug]# 
+
+
+Note: Pod is always a namespace specific
