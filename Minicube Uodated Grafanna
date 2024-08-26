@@ -58,3 +58,40 @@ This is required to access prometheus-server using your browser.
 
 Using "minikube ip" and get the ip address and add the port using above "kubectl get svc" command 
 Now prometheus UI will be opened
+===================================================
+
+Installing Grafanna using Helm Charts:
+    
+Add helm repo
+helm repo add grafana https://grafana.github.io/helm-charts
+
+Update helm repo
+helm repo update
+
+Install helm
+helm install grafana grafana/grafana
+
+Once instllation is completed, you need to execute the below command: to get the password for the admin user:
+    
+    #kubectl get secret --namespace default grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo 
+    
+Expose Grafana Service
+#kubectl expose service grafana --type=NodePort --target-port=3000 --name=grafana-ext
+#kubectl get svc
+
+With "minikube ip " along with the port number (take it from "kubectl get svc"), using browser, get the UI
+
+using "admin" user and with the password, login.
+Goto "Data Source" - click and see the options.  Normally have multiple data sources.  Select Prometheus 
+Where in "Prometheus server URL" section, enter the http://IPAddress:Port - which you have entered to create prometheus UI 
+select Save and Test
+
+Come back and see the "create first dashboard" - click --> just see the options.
+But, click left side 4squares option  -> select -> Dashboard -> select "Create Dashboard"  -> then select "import dashboard" ->  
+
+enter "3662" (this is ID number where pre-created template is available) -> as you click on the "Load" button, you can see prometheus is loaded. ...
+Also on the bottom select "prometheus" on the prometheus tab...then click "Import"
+
+Now you can able to see the Dashboards...
+
+======================================================Below Not to work - just FYI =====
