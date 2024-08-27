@@ -1,0 +1,25 @@
+Create ansible.cfg file
+
+master# su - ansible
+[ansible@master ~]$ vim ansible.cfg
+[defaults]
+inventory=/home/ansible/myinventory2
+remote_user=ansible
+
+[privilege_escalation]
+become=True
+become_method=sudo
+become_user=root
+become_ask_pass=False
+[ansible@master ~]$ 
+-----save------------
+
+Create the inventory
+
+[ansible@master ~]$ vim myinventory2
+node1.example.com
+node2.example.com
+-------save------------------
+
+[ansible@master ~]$ ansible -m user -a 'name=user21 state=present' node1.example.com
+--------------Now the user is created -----------
