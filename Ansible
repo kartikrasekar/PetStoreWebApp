@@ -23,3 +23,24 @@ node2.example.com
 
 [ansible@master ~]$ ansible -m user -a 'name=user21 state=present' node1.example.com
 --------------Now the user is created -----------
+
+================================================
+
+Playbook Creation:
+    
+    
+[ansible@master ~]$ vim simpleplay.yml
+- name: my first play
+  hosts: node1.example.com
+  tasks:
+  - name: my first task
+    user:
+      name: user60
+      state: present
+  - name: my second task
+    yum:
+      name: httpd
+      state: present
+[ansible@master ~]$ 
+[ansible@master ~]$ ansible-playbook simpleplay.yml  --syntax-check     ---> this will give you if any syntax errors available 
+[ansible@master ~]$ ansible-playbook simpleplay.yml
