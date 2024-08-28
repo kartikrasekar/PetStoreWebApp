@@ -66,3 +66,25 @@ spec:
       nodePort: 31202    # NodePort to expose the service on
   type: NodePort=========
 
+====================apiVersion: v1
+kind: Pod
+metadata:
+  name: simple-pod-kube
+  namespace: machinelearning
+spec:
+  containers:
+  - name: nginx-container
+    image: nginx:latest
+    resources:
+      limits:
+        cpu: "750m"
+        memory: "500Mi"
+      requests:
+        cpu: "250m"
+        memory: "200Mi"
+    ports:
+    - containerPort: 80
+================
+
+
+
