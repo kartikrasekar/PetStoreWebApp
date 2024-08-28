@@ -50,3 +50,19 @@ spec:
     - containerPort: 80
   nodeSelector:
     node-type: studentx
+=========================
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  namespace: machinelearning
+spec:
+  selector:
+    app: nginx-app
+  ports:
+    - protocol: TCP
+      port: 80           # Port that the service will expose
+      targetPort: 80     # Port on the Pods that the service will forward traffic to
+      nodePort: 31202    # NodePort to expose the service on
+  type: NodePort=========
+
